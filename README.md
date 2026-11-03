@@ -16,7 +16,7 @@
 
 开启 GitHub Pages 后可直接访问：
 
-> 待填写
+> https://haru-f-hub.github.io/rental-checklist/
 
 ## 本地使用
 
