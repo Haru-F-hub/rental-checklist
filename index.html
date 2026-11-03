@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>租房检查清单</title>
+<style>
+  :root {
+    --bg: #f6f3ec;
+    --card: #fffdf8;
+    --text: #24211b;
+    --muted: #7d766a;
+    --line: #eae4d8;
+    --accent: #1f7a5c;
+    --accent-soft: #e2f1eb;
+    --danger: #c0392b;
+    --danger-soft: #fbeae7;
+    --warn: #a86a15;
+    --warn-soft: #fcf1de;
+    --shadow: 0 1px 2px rgba(36, 33, 27, .04), 0 10px 30px rgba(36, 33, 27, .06);
+    --radius: 16px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1b1a17;
+      --card: #24221e;
+      --text: #efe9dd;
+      --muted: #a49c8d;
+      --line: #37332c;
+      --accent: #3fa985;
+      --accent-soft: #1f3a31;
+      --danger: #e57368;
+      --danger-soft: #3a2320;
+      --warn: #d9a441;
+      --warn-soft: #3a2f1c;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 10px 30px rgba(0, 0, 0, .25);
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    padding-bottom: calc(120px + env(safe-area-inset-bottom));
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background:
+      radial-gradient(900px 420px at 15% -10%, rgba(31, 122, 92, .10), transparent 60%),
+      radial-gradient(700px 400px at 110% 0%, rgba(168, 106, 21, .08), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 20px; }
+
+  /* ---------- 顶部 ---------- */
+  .app-header { padding: 34px 0 8px; }
+
+  .app-header h1 {
+    margin: 0 0 8px;
+    font-size: 27px;
+    letter-spacing: .5px;
+  }
+
+  .app-header .sub {
+    margin: 0 0 10px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .legend {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 0 2px;
+  }
+  .legend.pass { background: var(--accent-soft); color: var(--accent); }
+  .legend.fail { background: var(--danger-soft); color: var(--danger); }
+
+  .rule-note {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--muted);
+    background: rgba(36, 33, 27, .035);
+    border: 1px dashed var(--line);
+    border-radius: 10px;
+    padding: 8px 12px;
+    display: inline-block;
+  }
+
+  /* ---------- 分类卡片 ---------- */
+  main { padding-top: 14px; }
+
+  .category {
+    background: var(--card);
+    border: 1px solid rgba(0, 0, 0, .03);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 18px;
+    overflow: hidden;
+  }
+
+  .cat-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 15px 18px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .cat-head h2 { margin: 0; font-size: 16px; }
+
+  .cat-count {
+    flex-shrink: 0;
+    font-size: 12.5px;
+    color: var(--muted);
+    background: rgba(36, 33, 27, .05);
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--line);
+    transition: background .15s ease;
+  }
+  .item:last-child { border-bottom: 0; }
+  .item:hover { background: rgba(36, 33, 27, .025); }
+
+  .item-text {
+    flex: 1;
+    min-width: 0;
+    font-size: 14.5px;
+  }
+
+  .weight {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.7;
+    padding: 0 7px;
+    border-radius: 999px;
+    margin-right: 6px;
+    vertical-align: 1px;
+    white-space: nowrap;
+  }
+  .w5 { background: var(--danger-soft); color: var(--danger); }
+  .w4 { background: var(--warn-soft); color: var(--warn); }
+  .w3, .w2 { background: rgba(36, 33, 27, .06); color: var(--muted); }
+
+  .key-tag {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--danger);
+    border: 1px solid currentColor;
+    border-radius: 6px;
+    padding: 0 5px;
+    margin-right: 6px;
+    vertical-align: 1px;
+  }
+
+  .toggle { display: flex; gap: 8px; flex-shrink: 0; }
+
+  .tick {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 1.5px solid var(--line);
+    background: transparent;
+    color: var(--muted);
+    font-size: 17px;
+    font-weight: 800;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: transform .12s ease, background .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tick:hover { border-color: #b9b2a4; transform: translateY(-1px); }
+  .tick:active { transform: scale(.94); }
+  .tick.pass.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(31, 122, 92, .28);
+  }
+  .tick.fail.active {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(192, 57, 43, .26);
+  }
+
+  /* ---------- 底部操作栏 ---------- */
+  .action-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    background: var(--card);
+    background: color-mix(in srgb, var(--card) 92%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid var(--line);
+    padding: 11px 0 calc(11px + env(safe-area-inset-bottom));
+  }
+
+  .action-inner {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .progress-wrap { flex: 1; min-width: 150px; }
+
+  .progress-text {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .progress-text b { color: var(--text); font-variant-numeric: tabular-nums; }
+
+  .progress-track {
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(36, 33, 27, .09);
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #2a8f6c, #64ba96);
+    transition: width .25s ease;
+  }
+
+  .btn {
+    border: 0;
+    border-radius: 12px;
+    padding: 11px 20px;
+    font-size: 14.5px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform .12s ease, filter .15s ease, background .15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:active { transform: scale(.97); }
+
+  .btn.primary {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(31, 122, 92, .26);
+  }
+  .btn.primary:hover { filter: brightness(1.06); }
+
+  .btn.ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--line);
+  }
+  .btn.ghost:hover { color: var(--text); border-color: #b9b2a4; }
+
+  .btn.small { padding: 7px 13px; font-size: 13px; border-radius: 9px; }
+
+  /* ---------- 弹窗 ---------- */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(28, 25, 20, .48);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+  }
+  .overlay[hidden] { display: none; }
+
+  .modal {
+    background: var(--card);
+    color: var(--text);
+    border-radius: 22px;
+    width: 100%;
+    max-width: 580px;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, .28);
+    animation: pop .18s ease-out;
+  }
+
+  @keyframes pop {
+    from { opacity: 0; transform: translateY(14px) scale(.98); }
+    to { opacity: 1; transform: none; }
+  }
+
+  .modal-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 20px 22px 12px;
+  }
+  .modal-head h3 { margin: 0; font-size: 18px; }
+  .modal-sub { margin: 5px 0 0; font-size: 13px; color: var(--muted); }
+
+  .close-x {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(36, 33, 27, .07);
+    color: var(--muted);
+    font-size: 15px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .close-x:hover { background: rgba(36, 33, 27, .13); color: var(--text); }
+
+  .modal-body { padding: 6px 22px 20px; overflow-y: auto; }
+
+  .modal-foot {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 14px 22px calc(16px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+  }
+
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .blank-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease;
+  }
+  .blank-row:hover { background: rgba(36, 33, 27, .025); }
+  .blank-row:has(input:checked) {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  .blank-row input {
+    width: 17px;
+    height: 17px;
+    margin: 3px 0 0;
+    accent-color: var(--accent);
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .blank-info { flex: 1; min-width: 0; font-size: 13.5px; }
+  .blank-cat {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 2px;
+  }
+
+  .hint {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin: 12px 0 0;
+    line-height: 1.6;
+  }
+
+  /* ---------- 评分结果 ---------- */
+  .score-top {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    padding: 4px 0 6px;
+  }
+
+  .score-ring {
+    width: 142px;
+    height: 142px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: conic-gradient(var(--ring) calc(var(--p) * 1%), rgba(36, 33, 27, .10) 0);
+    display: grid;
+    place-items: center;
+    position: relative;
+  }
+
+  .score-ring::before {
+    content: "";
+    position: absolute;
+    inset: 11px;
+    border-radius: 50%;
+    background: var(--card);
+  }
+
+  .score-inner { position: relative; text-align: center; line-height: 1; }
+  .score-inner b { font-size: 40px; letter-spacing: -1.5px; font-variant-numeric: tabular-nums; }
+  .score-inner span { display: block; font-size: 12px; color: var(--muted); margin-top: 7px; }
+
+  .score-summary { flex: 1; min-width: 200px; }
+  .grade { font-size: 21px; font-weight: 800; margin-bottom: 6px; }
+  .grade-desc { font-size: 13.5px; color: var(--muted); }
+
+  .summary-meta {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 10px;
+    line-height: 1.7;
+  }
+
+  .alert-banner {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: var(--danger-soft);
+    color: var(--danger);
+    border-radius: 12px;
+    padding: 11px 13px;
+    font-size: 13.5px;
+    font-weight: 600;
+    margin: 16px 0 0;
+  }
+
+  .section-title {
+    font-size: 14px;
+    font-weight: 800;
+    margin: 22px 0 11px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .section-title small { font-weight: 400; color: var(--muted); font-size: 12px; }
+
+  .cat-stats { display: grid; gap: 12px; }
+
+  .cat-stat-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    font-size: 13px;
+    margin-bottom: 5px;
+  }
+  .cat-stat-pct { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  .cat-track {
+    height: 7px;
+    border-radius: 999px;
+    background: rgba(36, 33, 27, .09);
+    overflow: hidden;
+  }
+  .cat-fill { height: 100%; border-radius: 999px; }
+
+  .cat-stat-meta {
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .issue {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: var(--danger-soft);
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    font-size: 13.5px;
+  }
+  .issue .weight { margin-right: 0; flex-shrink: 0; }
+  .issue-text { flex: 1; min-width: 0; }
+  .issue-cat { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  .empty-good {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+    font-size: 13.5px;
+    font-weight: 600;
+  }
+
+  .tips {
+    margin-top: 20px;
+    padding: 13px 15px;
+    border: 1px dashed var(--line);
+    border-radius: 12px;
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.75;
+  }
+
+  .footer-note {
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--muted);
+    padding: 6px 0 26px;
+  }
+
+  @media (max-width: 560px) {
+    .wrap { padding: 0 14px; }
+    .app-header { padding-top: 24px; }
+    .app-header h1 { font-size: 23px; }
+    .item { padding: 11px 14px; gap: 10px; }
+    .item-text { font-size: 14px; }
+    .cat-head { padding: 13px 14px; }
+    .tick { width: 38px; height: 38px; }
+    .btn { padding: 10px 16px; }
+    .modal-head { padding: 17px 17px 10px; }
+    .modal-body { padding: 4px 17px 16px; }
+    .modal-foot { padding: 12px 17px calc(14px + env(safe-area-inset-bottom)); }
+    .score-ring { width: 122px; height: 122px; }
+    .score-inner b { font-size: 34px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="wrap">
+    <h1>🏠 租房检查清单</h1>
+    <p class="sub">
+      看房时逐项检查：<span class="legend pass">✓ 合格</span><span class="legend fail">✗ 有问题</span>两个都不点表示「未检查」。
+    </p>
+    <p class="rule-note">
+      评分规则：得分 = 合格项权重 ÷ 计入项权重总和 × 100。权重 5 为关键项，扣分最重。
+    </p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="checklist"></div>
+  <p class="footer-note">勾选内容会自动保存在当前浏览器里，刷新不会丢失。</p>
+</main>
+
+<!-- 底部固定操作栏 -->
+<div class="action-bar">
+  <div class="action-inner">
+    <div class="progress-wrap">
+      <div class="progress-text">
+        <span>已检查 <b id="doneCount">0</b> / <span id="totalCount">0</span> 项</span>
+        <span id="saveState">自动保存</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+    <button class="btn ghost" id="resetBtn" type="button">重新开始</button>
+    <button class="btn primary" id="calcBtn" type="button">计算得分</button>
+  </div>
+</div>
+
+<!-- 未检查项选择弹窗 -->
+<div class="overlay" id="uncheckedModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="uncheckedTitle">
+    <div class="modal-head">
+      <div>
+        <h3 id="uncheckedTitle">还有 <span id="uncheckedCount">0</span> 项没有勾选</h3>
+        <p class="modal-sub">这些项没有标记合格或有问题。请选择哪些要计入评分。</p>
+      </div>
+      <button class="close-x" type="button" data-close="uncheckedModal" aria-label="关闭">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="toolbar">
+        <button class="btn ghost small" type="button" id="selectAllBlanks">全选</button>
+        <button class="btn ghost small" type="button" id="selectNoneBlanks">全不选</button>
+      </div>
+      <div id="uncheckedList"></div>
+      <p class="hint" id="includeHint"></p>
+      <p class="hint">
+        说明：被勾选计入的「未检查项」会按 0 分处理（因为它没有被确认为合格）。不勾选则直接跳过，不参与计算。
+      </p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" type="button" data-close="uncheckedModal">取消</button>
+      <button class="btn primary" type="button" id="confirmCalcBtn">确认并计算</button>
+    </div>
+  </div>
+</div>
+
+<!-- 评分结果弹窗 -->
+<div class="overlay" id="resultModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+    <div class="modal-head">
+      <div>
+        <h3 id="resultTitle">评分结果</h3>
+        <p class="modal-sub">根据你勾选的项目计算得出</p>
+      </div>
+      <button class="close-x" type="button" data-close="resultModal" aria-label="关闭">✕</button>
+    </div>
+    <div class="modal-body" id="resultBody"></div>
+    <div class="modal-foot">
+      <button class="btn ghost" type="button" data-close="resultModal">返回修改</button>
+      <button class="btn primary" type="button" id="recalcBtn">重新计算</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ================= 清单数据 ================= */
+  var CHECKLIST = [
+    {
+      id: 'safety',
+      icon: '🚪',
+      title: '门窗与安全',
+      items: [
+        { id: 's1', text: '入户门锁完好，能正常反锁', weight: 5 },
+        { id: 's2', text: '窗户能关严，锁扣完好', weight: 4 },
+        { id: 's3', text: '检查是否藏有摄像头（尤其合租房、卧室、卫生间）', weight: 5 },
+        { id: 's4', text: '楼道照明、门禁、监控正常', weight: 3 },
+        { id: 's5', text: '消防设施齐全（灭火器、烟雾报警器）', weight: 3 },
+        { id: 's6', text: '阳台和窗户有防护措施', weight: 3 }
+      ]
+    },
+    {
+      id: 'utilities',
+      icon: '💧',
+      title: '水电燃气',
+      items: [
+        { id: 'u1', text: '所有水龙头出水正常，水压稳定', weight: 5 },
+        { id: 'u2', text: '热水器能正常加热，水温稳定', weight: 4 },
+        { id: 'u3', text: '马桶冲水顺畅，不堵塞、不漏水', weight: 4 },
+        { id: 'u4', text: '地漏和下水道排水顺畅，不反味', weight: 3 },
+        { id: 'u5', text: '每个插座都通电（带充电器逐个测试）', weight: 5 },
+        { id: 'u6', text: '全屋灯具和开关正常', weight: 3 },
+        { id: 'u7', text: '电箱不跳闸，线路无老化裸露', weight: 4 },
+        { id: 'u8', text: '燃气灶能正常打火，无漏气异味', weight: 5 },
+        { id: 'u9', text: '水、电、燃气表初始读数已记录并拍照', weight: 4 },
+        { id: 'u10', text: '水电燃气按民用价还是商用价收费已确认', weight: 4 },
+        { id: 'u11', text: '热水器不是直排式（防一氧化碳中毒）', weight: 5 }
+      ]
+    },
+    {
+      id: 'appliances',
+      icon: '❄️',
+      title: '家电与家具',
+      items: [
+        { id: 'a1', text: '空调制冷、制热正常，无异响、不漏水', weight: 5 },
+        { id: 'a2', text: '冰箱能正常制冷，无异常噪音', weight: 4 },
+        { id: 'a3', text: '洗衣机运转正常，不漏水', weight: 3 },
+        { id: 'a4', text: '油烟机吸力正常', weight: 3 },
+        { id: 'a5', text: '床、衣柜、沙发等家具稳固，无破损', weight: 3 },
+        { id: 'a6', text: '家具家电的品牌型号与交接清单一致', weight: 3 }
+      ]
+    },
+    {
+      id: 'walls',
+      icon: '🧱',
+      title: '墙面、漏水与异味',
+      items: [
+        { id: 'w1', text: '墙面、天花板无渗水和水渍', weight: 5 },
+        { id: 'w2', text: '墙角、卫生间外墙、窗边无发霉', weight: 5 },
+        { id: 'w3', text: '室内无刺鼻异味或霉味', weight: 4 },
+        { id: 'w4', text: '新装修房能提供甲醛检测报告', weight: 3 },
+        { id: 'w5', text: '地面、墙面无大面积裂缝和脱落', weight: 4 }
+      ]
+    },
+    {
+      id: 'environment',
+      icon: '🌤️',
+      title: '采光、噪音与周边',
+      items: [
+        { id: 'e1', text: '白天采光正常，不潮湿阴暗', weight: 3 },
+        { id: 'e2', text: '关窗后室内噪音可接受', weight: 4 },
+        { id: 'e3', text: '晚上再来一次，确认夜间噪音、照明和安保', weight: 4 },
+        { id: 'e4', text: '地铁、公交和通勤时间可接受', weight: 3 },
+        { id: 'e5', text: '周边超市、医院等生活配套齐全', weight: 2 },
+        { id: 'e6', text: '邻居或室友情况已了解', weight: 3 }
+      ]
+    },
+    {
+      id: 'contract',
+      icon: '📄',
+      title: '合同与费用',
+      items: [
+        { id: 'c1', text: '房东身份证与房产证信息一致', weight: 5 },
+        { id: 'c2', text: '二房东有原租赁合同和转租同意证明', weight: 5 },
+        { id: 'c3', text: '押金金额、退还条件和退还时限写进合同', weight: 5 },
+        { id: 'c4', text: '水电燃气、物业、取暖、网费由谁承担已写清', weight: 5 },
+        { id: 'c5', text: '租金金额、支付日期和收款账户已写清', weight: 4 },
+        { id: 'c6', text: '非人为损坏的维修责任写进合同', weight: 5 },
+        { id: 'c7', text: '提前退租违约金和房东提前收房条款已看清', weight: 4 },
+        { id: 'c8', text: '口头承诺（养宠、换锁、维修等）写进合同', weight: 4 },
+        { id: 'c9', text: '《房屋交接清单》双方签字并拍照留证', weight: 5 },
+        { id: 'c10', text: '签约前未交任何费用，付款都有收据', weight: 4 }
+      ]
+    }
+  ];
+
+  var ALL_ITEMS = [];
+  CHECKLIST.forEach(function (cat) {
+    cat.items.forEach(function (it) {
+      ALL_ITEMS.push({
+        id: it.id,
+        text: it.text,
+        weight: it.weight,
+        catId: cat.id,
+        catTitle: cat.title,
+        catIcon: cat.icon
+      });
+    });
+  });
+
+  var ITEM_MAP = {};
+  ALL_ITEMS.forEach(function (it) { ITEM_MAP[it.id] = it; });
+
+  function esc(value) {
+    return String(value).replace(/[&<>"']/g, function (ch) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+    });
+  }
+
+  var STORAGE_KEY = 'rental-checklist-v1';
+  var answers = {}; // id -> 'pass' | 'fail'
+  var storageOK = true;
+
+  /* ================= 本地存储 ================= */
+  function checkStorage() {
+    try {
+      localStorage.setItem('__rental_test__', '1');
+      localStorage.removeItem('__rental_test__');
+    } catch (e) {
+      storageOK = false;
+    }
+  }
+
+  function loadAnswers() {
+    var result = {};
+    if (!storageOK) return result;
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return result;
+      var obj = JSON.parse(raw);
+      Object.keys(obj).forEach(function (id) {
+        if (ITEM_MAP[id] && (obj[id] === 'pass' || obj[id] === 'fail')) {
+          result[id] = obj[id];
+        }
+      });
+    } catch (e) {
+      result = {};
+    }
+    return result;
+  }
+
+  function saveAnswers() {
+    if (!storageOK) {
+      document.getElementById('saveState').textContent = '无法自动保存';
+      return;
+    }
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(answers));
+      document.getElementById('saveState').textContent = '已自动保存 ✓';
+      window.clearTimeout(saveAnswers._timer);
+      saveAnswers._timer = window.setTimeout(function () {
+        document.getElementById('saveState').textContent = '自动保存';
+      }, 1600);
+    } catch (e) {
+      document.getElementById('saveState').textContent = '无法自动保存';
+    }
+  }
+
+  /* ================= 渲染清单 ================= */
+  function weightBadge(weight) {
+    return '<span class="weight w' + weight + '">权重 ' + weight + '</span>' +
+      (weight === 5 ? '<span class="key-tag">关键</span>' : '');
+  }
+
+  function itemHTML(it) {
+    var a = answers[it.id] || '';
+    return (
+      '<div class="item" data-id="' + it.id + '">' +
+        '<div class="item-text">' + weightBadge(it.weight) + '<span>' + esc(it.text) + '</span></div>' +
+        '<div class="toggle">' +
+          '<button class="tick pass' + (a === 'pass' ? ' active' : '') + '" type="button" data-act="pass"' +
+            ' aria-pressed="' + (a === 'pass') + '" aria-label="合格：' + esc(it.text) + '" title="合格">✓</button>' +
+          '<button class="tick fail' + (a === 'fail' ? ' active' : '') + '" type="button" data-act="fail"' +
+            ' aria-pressed="' + (a === 'fail') + '" aria-label="有问题：' + esc(it.text) + '" title="有问题">✗</button>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function renderChecklist() {
+    var html = CHECKLIST.map(function (cat) {
+      return (
+        '<section class="category" data-cat="' + cat.id + '">' +
+          '<div class="cat-head">' +
+            '<h2>' + cat.icon + ' ' + cat.title + '</h2>' +
+            '<span class="cat-count" id="count-' + cat.id + '"></span>' +
+          '</div>' +
+          cat.items.map(itemHTML).join('') +
+        '</section>'
+      );
+    }).join('');
+    document.getElementById('checklist').innerHTML = html;
+    document.getElementById('totalCount').textContent = ALL_ITEMS.length;
+  }
+
+  function updateCounts() {
+    var done = 0;
+    CHECKLIST.forEach(function (cat) {
+      var catDone = 0;
+      cat.items.forEach(function (it) {
+        if (answers[it.id]) catDone++;
+      });
+      done += catDone;
+      var el = document.getElementById('count-' + cat.id);
+      if (el) el.textContent = catDone + ' / ' + cat.items.length;
+    });
+    document.getElementById('doneCount').textContent = done;
+    document.getElementById('progressFill').style.width =
+      (ALL_ITEMS.length ? (done / ALL_ITEMS.length) * 100 : 0) + '%';
+  }
+
+  /* ================= 勾选交互 ================= */
+  document.getElementById('checklist').addEventListener('click', function (e) {
+    var btn = e.target.closest('.tick');
+    if (!btn) return;
+    var itemEl = btn.closest('.item');
+    var id = itemEl.getAttribute('data-id');
+    var act = btn.getAttribute('data-act');
+
+    if (answers[id] === act) {
+      delete answers[id]; // 再次点击取消
+    } else {
+      answers[id] = act;
+    }
+
+    var current = answers[id] || '';
+    itemEl.querySelectorAll('.tick').forEach(function (b) {
+      var on = b.getAttribute('data-act') === current;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+
+    saveAnswers();
+    updateCounts();
+  });
+
+  /* ================= 弹窗通用 ================= */
+  var lastFocused = null;
+
+  function getFocusable(container) {
+    return Array.prototype.slice.call(container.querySelectorAll(
+      'button:not([disabled]), input:not([disabled]), [href], select, textarea, [tabindex]:not([tabindex="-1"])'
+    )).filter(function (el) { return el.offsetParent !== null; });
+  }
+
+  function setBackgroundInert(isInert) {
+    ['header', 'main', '.action-bar'].forEach(function (selector) {
+      var el = document.querySelector(selector);
+      if (el) el.inert = isInert;
+    });
+  }
+
+  function openModal(id) {
+    lastFocused = document.activeElement;
+    var overlay = document.getElementById(id);
+    overlay.hidden = false;
+    document.body.style.overflow = 'hidden';
+    setBackgroundInert(true);
+    var focusables = getFocusable(overlay.querySelector('.modal'));
+    if (focusables.length) focusables[0].focus();
+  }
+
+  function closeModal(id) {
+    var overlay = document.getElementById(id);
+    overlay.hidden = true;
+    document.body.style.overflow = '';
+    setBackgroundInert(false);
+    if (lastFocused && lastFocused.focus) lastFocused.focus();
+  }
+
+  document.querySelectorAll('[data-close]').forEach(function (el) {
+    el.addEventListener('click', function () {
+      closeModal(el.getAttribute('data-close'));
+    });
+  });
+
+  document.querySelectorAll('.overlay').forEach(function (ov) {
+    ov.addEventListener('click', function (e) {
+      if (e.target === ov) closeModal(ov.id);
+    });
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.overlay:not([hidden])').forEach(function (ov) {
+        closeModal(ov.id);
+      });
+      return;
+    }
+
+    if (e.key !== 'Tab') return;
+    var openOverlay = document.querySelector('.overlay:not([hidden])');
+    if (!openOverlay) return;
+    var focusables = getFocusable(openOverlay.querySelector('.modal'));
+    if (focusables.length === 0) return;
+    var first = focusables[0];
+    var last = focusables[focusables.length - 1];
+
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  });
+
+  /* ================= 计算得分 ================= */
+  var pendingBlanks = [];
+
+  document.getElementById('calcBtn').addEventListener('click', function () {
+    pendingBlanks = ALL_ITEMS.filter(function (it) { return !answers[it.id]; });
+
+    if (pendingBlanks.length === 0) {
+      renderResult([]);
+      return;
+    }
+
+    document.getElementById('uncheckedCount').textContent = pendingBlanks.length;
+    document.getElementById('uncheckedList').innerHTML = pendingBlanks.map(function (it) {
+      return (
+        '<label class="blank-row">' +
+          '<input type="checkbox" value="' + it.id + '">' +
+          '<span class="blank-info">' +
+            '<span class="blank-cat">' + it.catIcon + ' ' + it.catTitle + '</span>' +
+            '<span>' + esc(it.text) + '</span>' +
+          '</span>' +
+          weightBadge(it.weight) +
+        '</label>'
+      );
+    }).join('');
+
+    updateIncludeHint();
+    openModal('uncheckedModal');
+  });
+
+  function updateIncludeHint() {
+    var count = document.querySelectorAll('#uncheckedList input:checked').length;
+    document.getElementById('includeHint').textContent =
+      '当前有 ' + count + ' 项未检查项计入评分（将按 0 分处理）。';
+  }
+
+  document.getElementById('uncheckedList').addEventListener('change', updateIncludeHint);
+
+  document.getElementById('selectAllBlanks').addEventListener('click', function () {
+    document.querySelectorAll('#uncheckedList input').forEach(function (cb) { cb.checked = true; });
+    updateIncludeHint();
+  });
+
+  document.getElementById('selectNoneBlanks').addEventListener('click', function () {
+    document.querySelectorAll('#uncheckedList input').forEach(function (cb) { cb.checked = false; });
+    updateIncludeHint();
+  });
+
+  document.getElementById('confirmCalcBtn').addEventListener('click', function () {
+    var includedBlanks = Array.prototype.map.call(
+      document.querySelectorAll('#uncheckedList input:checked'),
+      function (cb) { return cb.value; }
+    );
+
+    var answeredCount = ALL_ITEMS.filter(function (it) { return answers[it.id]; }).length;
+    if (answeredCount === 0 && includedBlanks.length === 0) {
+      window.alert('还没有任何项目参与评分：请先至少勾选一项检查结果，或选择一些未检查项计入评分。');
+      return;
+    }
+
+    closeModal('uncheckedModal');
+    renderResult(includedBlanks);
+  });
+
+  function gradeOf(score) {
+    if (score >= 90) {
+      return {
+        label: '优秀',
+        color: '#1f7a5c',
+        desc: '房屋状况良好，可以放心签约。签约前仍记得拍照留证。'
+      };
+    }
+    if (score >= 75) {
+      return {
+        label: '良好',
+        color: '#4c8a3f',
+        desc: '整体不错，建议把扣分项让房东整改并写进合同后再签。'
+      };
+    }
+    if (score >= 60) {
+      return {
+        label: '一般',
+        color: '#b7791f',
+        desc: '有明显短板，建议压价或要求维修，谨慎签约。'
+      };
+    }
+    if (score >= 40) {
+      return {
+        label: '较差',
+        color: '#c2622b',
+        desc: '问题较多，除非价格很有优势，否则建议再看看别的房子。'
+      };
+    }
+    return {
+      label: '很差',
+      color: '#c0392b',
+      desc: '不建议租，隐患较多，换一套更稳妥。'
+    };
+  }
+
+  function barColor(pct) {
+    if (pct >= 75) return '#2a8f6c';
+    if (pct >= 50) return '#c08a2e';
+    return '#c0503a';
+  }
+
+  function renderResult(includedBlanks) {
+    var injected = {};
+    includedBlanks.forEach(function (id) { injected[id] = true; });
+
+    var included = ALL_ITEMS.filter(function (it) {
+      return answers[it.id] || injected[it.id];
+    });
+
+    if (included.length === 0) {
+      window.alert('没有可计入评分的项目，请先勾选检查结果。');
+      return;
+    }
+
+    var totalWeight = 0;
+    var passWeight = 0;
+    var passed = 0;
+    var failed = 0;
+    var unknown = 0;
+
+    included.forEach(function (it) {
+      totalWeight += it.weight;
+      if (answers[it.id] === 'pass') {
+        passWeight += it.weight;
+        passed++;
+      } else if (answers[it.id] === 'fail') {
+        failed++;
+      } else {
+        unknown++;
+      }
+    });
+
+    var score = totalWeight > 0 ? Math.round((passWeight / totalWeight) * 100) : 0;
+    var grade = gradeOf(score);
+
+    var catStats = CHECKLIST.map(function (cat) {
+      var inc = included.filter(function (it) { return it.catId === cat.id; });
+      var tw = 0;
+      var pw = 0;
+      var p = 0;
+      var f = 0;
+      var bl = 0;
+      inc.forEach(function (it) {
+        tw += it.weight;
+        if (answers[it.id] === 'pass') { pw += it.weight; p++; }
+        else if (answers[it.id] === 'fail') { f++; }
+        else { bl++; }
+      });
+      return {
+        cat: cat,
+        count: inc.length,
+        totalWeight: tw,
+        pct: tw > 0 ? Math.round((pw / tw) * 100) : null,
+        passed: p,
+        failed: f,
+        unknown: bl
+      };
+    });
+
+    var issues = included
+      .filter(function (it) { return answers[it.id] === 'fail'; })
+      .sort(function (a, b) { return b.weight - a.weight || a.text.localeCompare(b.text, 'zh'); });
+
+    var hasKeyIssue = issues.some(function (it) { return it.weight === 5; });
+
+    var html = '';
+
+    html += '<div class="score-top">';
+    html += '<div class="score-ring" style="--p:' + score + ';--ring:' + grade.color + '">' +
+              '<div class="score-inner"><b>' + score + '</b><span>满分 100</span></div>' +
+            '</div>';
+    html += '<div class="score-summary">' +
+              '<div class="grade" style="color:' + grade.color + '">' + grade.label + '</div>' +
+              '<div class="grade-desc">' + grade.desc + '</div>' +
+              '<div class="summary-meta">共计入 ' + included.length + ' 项（权重合计 ' + totalWeight + '）' +
+                '<br>合格 ' + passed + ' 项 · 有问题 ' + failed + ' 项' +
+                (unknown ? ' · 未判定 ' + unknown + ' 项（按 0 分）' : '') +
+              '</div>' +
+            '</div>';
+    html += '</div>';
+
+    if (hasKeyIssue) {
+      html += '<div class="alert-banner"><span>⚠️</span><span>存在关键项不合格，建议先让房东整改，或重新考虑这套房子。</span></div>';
+    }
+
+    html += '<div class="section-title">各分类得分 <small>按权重计算</small></div>';
+    html += '<div class="cat-stats">';
+    catStats.forEach(function (s) {
+      html += '<div class="cat-stat">';
+      html += '<div class="cat-stat-head"><span>' + s.cat.icon + ' ' + s.cat.title + '</span>';
+      html += '<span class="cat-stat-pct">' + (s.pct === null ? '未计入' : s.pct + '%') + '</span></div>';
+      if (s.pct !== null) {
+        html += '<div class="cat-track"><div class="cat-fill" style="width:' + s.pct + '%;background:' + barColor(s.pct) + '"></div></div>';
+        html += '<div class="cat-stat-meta">合格 ' + s.passed + ' · 有问题 ' + s.failed +
+                (s.unknown ? ' · 未判定 ' + s.unknown : '') + '</div>';
+      } else {
+        html += '<div class="cat-stat-meta">该分类没有项目参与评分</div>';
+      }
+      html += '</div>';
+    });
+    html += '</div>';
+
+    html += '<div class="section-title">不合格项 <small>按严重程度排序</small></div>';
+    if (issues.length === 0) {
+      html += '<div class="empty-good">🎉 恭喜，没有发现不合格项。</div>';
+    } else {
+      issues.forEach(function (it) {
+        html += '<div class="issue">' +
+                  weightBadge(it.weight) +
+                  '<div class="issue-text">' + esc(it.text) +
+                    '<span class="issue-cat">' + it.catIcon + ' ' + it.catTitle + '</span>' +
+                  '</div>' +
+                '</div>';
+      });
+    }
+
+    html += '<div class="tips">📸 提醒：看房时对全屋、家具家电、水电燃气表拍照录像；已有的破损、污渍当场发给房东确认。' +
+            '把维修责任、费用承担、押金退还条件写进合同，退押金时才更有保障。</div>';
+
+    document.getElementById('resultBody').innerHTML = html;
+    openModal('resultModal');
+    document.getElementById('resultBody').scrollTop = 0;
+  }
+
+  document.getElementById('recalcBtn').addEventListener('click', function () {
+    closeModal('resultModal');
+    document.getElementById('calcBtn').click();
+  });
+
+  /* ================= 重新开始 ================= */
+  document.getElementById('resetBtn').addEventListener('click', function () {
+    var ok = window.confirm('确定要清空所有勾选吗？清空后无法恢复。');
+    if (!ok) return;
+    answers = {};
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+    renderChecklist();
+    updateCounts();
+    document.querySelectorAll('.overlay:not([hidden])').forEach(function (ov) { closeModal(ov.id); });
+  });
+
+  /* ================= 启动 ================= */
+  checkStorage();
+  answers = loadAnswers();
+  renderChecklist();
+  updateCounts();
+
+  if (!storageOK) {
+    document.getElementById('saveState').textContent = '当前环境无法自动保存';
+  }
+})();
+</script>
+</body>
+</html>
